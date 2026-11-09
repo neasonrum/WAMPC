@@ -1,14 +1,28 @@
 # Full Diffusion V3: Independent Spatial and Temporal Queries
 
-Status: train-only V3 normalization has been prepared on 276,547 retained
-training samples. The current architecture is `independent_dual_query64` with
-the V3-only `automot_temporal_pid_v1` controller. Focused CPU checks cover
-cross-query isolation, AutoMoT target/loss/controller equivalence, the actual V3 update, persistent
-workers, independent loader RNG, complete checkpoints, and exact subsequent
-updates across a fresh-model mid-epoch resume and an epoch boundary. The
-four-node controller requires real eight-rank sensor-data resume acceptance
-before formal training. Per-run acceptance and training status are recorded
-in the selected output directory. Existing experiment results are preserved.
+Status as of 2026-11-09: the `independent_dual_query64` architecture with the
+V3-only `automot_temporal_pid_v1` controller completed 10 training epochs /
+43,210 updates. The evaluated epoch-10 checkpoint SHA256 is
+`ea3eea848318c86cef17b9bc59a5a8c7fa17eed345123a5d359967a5323eb027`.
+The full 220-route report has DS 85.35968342727273, strict success 65.9090909090909%,
+and route completion 95.55781818181819%. It combines 216 original routes, two
+ordinary retries, and two version-pinned native-guard retries; it is not an
+unmodified single-pass evaluation. Route 23670 also has a post-score shutdown
+SIGSEGV with a valid saved driving record.
+
+Use the [main handoff README](../../README.md) for exact weight sources/checksums,
+installation, evaluation commands, outstanding external publications, training
+materials, and portability limitations. The frozen perception is upstream
+CARLA Garage code plus the separate official `all_towns` checkpoint/config;
+cloning its source does not download the weights. Our V3 checkpoint is separate.
+
+Train-only V3 normalization was prepared on 276,547 retained training samples.
+Focused CPU checks covered cross-query isolation, AutoMoT target/loss/controller
+equivalence, real V3 updates, persistent workers, independent loader RNG,
+complete checkpoints, and subsequent mid-epoch/epoch-boundary resume updates.
+Real eight-rank acceptance and training records live in the original run output.
+The detailed runtime/design notes below retain historical implementation context;
+their original job IDs are not current execution authorizations.
 
 ## Implemented Scope
 
@@ -44,8 +58,11 @@ an experimental hypothesis, not a promised outcome.
 
 ## Training Runtime
 
-Use `coordinator.py --gpu-authorized --detach --output <new-run-directory>`
-from the login node after explicit approval. It uses only the original four
+This section describes the original LSF deployment, not a portable new-server
+launch procedure. Its fixed allocations/hosts must be adapted to newly approved
+jobs before any new launch or continuation. The historical command was
+`coordinator.py --gpu-authorized --detach --output <new-run-directory>`
+from the login node after explicit approval. It used only the original four
 two-A100 LSF jobs (13053006, 13047896, 13047898, 13046830), freezes the planner
 and Garage Python sources, and verifies each original GPU UUID/allocation.
 Preflight CUDA work runs in finite children, never in the parent controller.
@@ -407,7 +424,10 @@ configuration/dataset identity and strictly loads V3 model/optimizer states.
 The CARLA entry point is [inference/carla_agent.py](inference/carla_agent.py),
 with `get_entry_point()` returning `FullDiffusionV3Agent`. Its configuration
 argument is a compatible dual-query V3 checkpoint file or a directory containing
-`latest.pt`. Old single-query checkpoints are rejected. CPU equivalence is not
-a closed-loop performance result; real eight-rank acceptance and formal training
-status live in each new run directory. CARLA scores require a separately
-authorized evaluation of the new checkpoint.
+`latest.pt`. The handoff uses the explicit evaluated `epoch_10.pt` file. Old
+single-query checkpoints are rejected. The actual historical scoring wrapper is
+[the V3 fast agent](../../evaluation/full_diffusionv3_fast_agent.py), selected by
+`evaluation/run_full_diffusion2_carla.py --method full_diffusionv3`. Its 100-step,
+seed-901 evaluation report and native-guard caveats are documented in the
+[main handoff README](../../README.md). Further CARLA evaluation still requires
+new explicit GPU authorization; the completed run does not authorize a restart.
