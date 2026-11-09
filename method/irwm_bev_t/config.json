@@ -1,0 +1,24 @@
+{
+  "method": "irwm_bev_t",
+  "index": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/irwm_bev_t_dt05_h3_b32_train_20261106_v1/index",
+  "cache": "/fs/scratch/rb-bd-dlp-rng-dl01-cr-tfx/special/tfx-901/rai-ap/workspace/nix3sgh/WMMPC/data/irwm_bev/teacher_cache",
+  "seed": 901,
+  "epochs": 24,
+  "batch_per_gpu": 16,
+  "world_size": 2,
+  "accumulation_steps": 1,
+  "effective_batch": 32,
+  "workers_per_rank": 3,
+  "prefetch_factor": 4,
+  "learning_rate": 0.0002,
+  "weight_decay": 0.01,
+  "warmup_updates": 500,
+  "log_every": 10,
+  "checkpoint_every": 250,
+  "initialization": "random; new timed-action training",
+  "model": {
+    "hidden": 96,
+    "history": 3,
+    "path_nodes": 6
+  }
+}

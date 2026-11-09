@@ -1,0 +1,49 @@
+{
+  "method": "full_diffusion2",
+  "target": "Pure E2E Full Diffusion with planner-only temporal BEV and clean-state query concatenation",
+  "index_directory": "data/full_diffusion/pdm_lite_seed901",
+  "backbone_directory": "ckps/full_diffusion/backbone/all_towns_seed1",
+  "seed": 901,
+  "epochs": 10,
+  "world_size": 8,
+  "batch_per_gpu": 8,
+  "workers_per_rank": 2,
+  "history_stride": 1,
+  "observation_interval_seconds": 0.25,
+  "history_encode_chunk": 8,
+  "learning_rate": 0.0003,
+  "weight_decay": 0.0001,
+  "gradient_clip": 1.0,
+  "checkpoint_every_updates": 500,
+  "log_every_updates": 10,
+  "precision": "bf16",
+  "model": {
+    "path_points": 10,
+    "bev_channels": 64,
+    "d_model": 256,
+    "d_ffn": 1024,
+    "layers": 2,
+    "dropout": 0.1,
+    "state_width": 128,
+    "history_frames": 2
+  },
+  "diffusion": {
+    "train_steps": 1000,
+    "beta_min": 0.1,
+    "beta_d": 19.9,
+    "inference_steps": 100
+  },
+  "master_address": "rng-dl01-w005",
+  "master_port": 29683,
+  "assumptions": [
+    "Same retained current-frame indices, whole-route validation split, target normalization, frozen TF++ checkpoint, optimizer and 10-epoch schedule as full_diffusion.",
+    "Global batch 64 = 8 A100 GPUs x 8 examples; no baseline planner checkpoint warm start.",
+    "Current observation plus two consecutive past raw frames at 0.25-second spacing; no future observations and no world model.",
+    "Preserve current raw BEV for original detection and preserve original current-frame memory/checkpoint-query ego context.",
+    "Historical frozen backbone BEVs are rigidly aligned to the current augmented ego frame, channel-concatenated, convolutionally fused and gated by current speed, command and goal.",
+    "A zero-initialized output projection adds temporal/gated features as a planner-only residual before the original per-layer BEV value projections.",
+    "Encode normalized speed, six-dimensional navigation command and goal XY to 128 dimensions; concatenate with the 256-dimensional noisy trajectory query, project 384 to 256 and add residually before the decoder.",
+    "State and navigation are clean conditions, not diffused targets. Preserve pure Gaussian VP start, 100-step DDIM, x0 prediction and both-layer metric L1.",
+    "All new modules are trainable outside the frozen perception no_grad boundary; zero residual initialization initially preserves the original planner function."
+  ]
+}

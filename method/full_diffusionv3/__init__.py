@@ -1,0 +1,1 @@
+"""Single-query Full Diffusion with spatial paths and temporal motion."""

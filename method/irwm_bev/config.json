@@ -1,0 +1,15 @@
+{
+  "index": "data/irwm_bev/pdm_seed901_dev44_v1",
+  "cache": "data/irwm_bev/teacher_cache",
+  "seed": 901,
+  "epochs": 24,
+  "batch_per_gpu": 4,
+  "workers_per_rank": 2,
+  "teacher_chunk": 4,
+  "learning_rate": 0.0002,
+  "weight_decay": 0.01,
+  "warmup_updates": 500,
+  "log_every": 10,
+  "checkpoint_every": 250,
+  "model": {"hidden": 96, "history": 3, "path_nodes": 10}
+}

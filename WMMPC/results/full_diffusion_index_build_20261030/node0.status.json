@@ -1,0 +1,24 @@
+{
+  "controller_pid": 3399771,
+  "job_id": "13047898",
+  "node_rank": 0,
+  "hostname": "rng-dl01-w007.de.bosch.com",
+  "phase": "index",
+  "command": [
+    "/fs/scratch/rb-bd-dlp-rng-dl01-cr-tfx/special/tfx-901/rai-ap/workspace/nix3sgh/ENV/wmmpc-full-diffusion/bin/python",
+    "-u",
+    "-m",
+    "method.full_diffusion.data",
+    "--output",
+    "/fs/scratch/rb-bd-dlp-rng-dl01-cr-tfx/special/tfx-901/rai-ap/workspace/nix3sgh/WMMPC/data/full_diffusion/pdm_lite_seed901",
+    "--workers",
+    "8"
+  ],
+  "started_at": "2026-10-30T08:43:37.139550+00:00",
+  "state": "completed",
+  "worker_parent_pid": 3399772,
+  "cuda_visible_devices": null,
+  "network_interface": null,
+  "return_code": 0,
+  "finished_at": "2026-10-30T08:44:39.716567+00:00"
+}

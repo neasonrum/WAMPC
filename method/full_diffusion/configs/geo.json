@@ -1,0 +1,41 @@
+{
+  "target": "BridgeDrive Table 2 Full Diffusion geo; paper-based reproduction",
+  "index_directory": "data/full_diffusion/pdm_lite_seed901",
+  "backbone_directory": "ckps/full_diffusion/backbone/all_towns_seed1",
+  "seed": 901,
+  "epochs": 10,
+  "batch_per_gpu": 16,
+  "workers_per_rank": 2,
+  "learning_rate": 0.0003,
+  "weight_decay": 0.0001,
+  "gradient_clip": 1.0,
+  "checkpoint_every_updates": 500,
+  "log_every_updates": 10,
+  "precision": "bf16",
+  "model": {
+    "path_points": 10,
+    "bev_channels": 64,
+    "d_model": 256,
+    "d_ffn": 1024,
+    "layers": 2,
+    "dropout": 0.1
+  },
+  "diffusion": {
+    "train_steps": 1000,
+    "beta_min": 0.1,
+    "beta_d": 19.9,
+    "inference_steps": 100
+  },
+  "master_address": "rng-dl01-w007",
+  "master_port": 29579,
+  "assumptions": [
+    "Reuse the public NAVSIM TrajectoryFullDiffuHead structure and BridgeDrive attention/position components, adapting its output to Garage 10-point geometry plus one continuous speed scalar.",
+    "Frozen official all_towns model_0030_1.pth; Garage fusion tokens replace NAVSIM agent queries; a trainable target-point token preserves navigation conditioning.",
+    "Global batch 64 on four A100 GPUs, weight decay 1e-4, gradient clipping 1.0, bf16; these are reproduction choices, not reported paper settings.",
+    "Full Gaussian VP uses beta_d=19.9 and beta_min=0.1 so terminal alpha squared is below 5e-5. The paper's beta_d=2 describes its anchor bridge, not a pure-Gaussian terminal distribution.",
+    "No noisy-latent clamping or output clipping inside DDIM; 100 deterministic reverse steps; x0 prediction and metric L1 supervised at both decoder layers.",
+    "Whole-route deterministic 5% validation, seed 901; critical-frame rules compare adjacent raw frames, retaining 14% of unchanged frames.",
+    "Train-only per-point normalization with standard-deviation floor 0.1; metric path/speed L1 excludes the speed token's dummy second coordinate.",
+    "Use the checkpoint's repetition limit and 10-frame initial skip; reuse Garage camera/LiDAR augmentation and its 2.5m initial path offset followed by 1m geometric spacing."
+  ]
+}

@@ -1,0 +1,26 @@
+-r requirements-bench2drive.txt
+torch==2.5.0+cu121
+torchvision==0.20.0+cu121
+diffusers==0.30.3
+timm==1.0.11
+diskcache==5.4.0
+einops==0.4.1
+filterpy==1.4.5
+h5py==3.7.0
+imgaug==0.4.0
+laspy==2.5.4
+laszip==0.2.3
+lxml==5.1.0
+omegaconf==2.3.0
+Pillow==10.2.0
+pytictoc==1.5.3
+rdp==0.8
+scikit-image==0.19.3
+scikit-learn==1.5.2
+tensorboard==2.14.0
+tensorboardX==2.6.2.2
+torchmetrics==0.11.0
+tqdm==4.66.1
+ujson==5.9.0
+wandb==0.16.6
+webcolors==1.13

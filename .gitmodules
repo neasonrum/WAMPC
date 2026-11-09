@@ -1,0 +1,3 @@
+[submodule "third_party/carla_garage"]
+	path = third_party/carla_garage
+	url = https://github.com/autonomousvision/carla_garage.git
