@@ -1,3 +1,9 @@
+# Current experiment: point-query E2E with navigation fusion
+
+Source: [method/full_diffusion_pointquery_nav](method/full_diffusion_pointquery_nav).
+[Experiment design and controls](docs/POINTQUERY_NAV_E2E_20261125.md).
+The previously published point-query CVCI method is preserved.
+
 # WMMPC
 
 **Current source snapshot (2026-11-25):** the latest evaluated implementation is
