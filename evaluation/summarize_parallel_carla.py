@@ -37,7 +37,7 @@ def summarize(run, extended=False, merge=False):
               'states': dict(Counter(item['state'] for item in state['items'].values())),
               'unrecovered_errors': {r: v.get('last_result') for r, v in state['items'].items() if v['state'] == 'error'},
               'attempt_classifications': dict(Counter(a['classification'] for a in attempts)),
-              'checkpoint_sha256': state['identity']['checkpoint_sha256'], 'inference_steps': 100,
+              'checkpoint_sha256': state['identity']['checkpoint_sha256'], 'inference_steps': state['identity']['inference_steps'],
               'group_count': len(manifests), 'metrics_observed_routes': None, 'metrics_full_benchmark': None}
     if manifests:
         start = min(m['unix'] for m in manifests)

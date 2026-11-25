@@ -47,7 +47,7 @@ def stop_evaluator(proc):
         proc.wait(timeout=10)
 
 
-def publish_completed(result, routes, attempt, output, previous_finish):
+def publish_completed(result, routes, attempt, output, previous_finish, inference_steps=100):
     published = []
     for record in result.get('_checkpoint', {}).get('records', []):
         route = route_number(record)
@@ -71,7 +71,7 @@ def publish_completed(result, routes, attempt, output, previous_finish):
                    'entry_status': result.get('entry_status'), 'returncode': None,
                    'elapsed_seconds': now - previous_finish,
                    'timing_basis': 'Checkpoint completion observation interval, at most 3s polling delay',
-                   'shared_server': True, 'inference_steps': 100}
+                   'shared_server': True, 'inference_steps': inference_steps}
         path.parent.mkdir(exist_ok=True)
         save(path, summary)
         published.append(route)
@@ -80,6 +80,7 @@ def publish_completed(result, routes, attempt, output, previous_finish):
 
 
 def batch_trial(args, routes, attempt, gpu_uuid):
+    inference_steps = getattr(args, "inference_steps", 100)
     attempt.mkdir(parents=True)
     for name in ('tmp', 'cache', 'matplotlib', 'home'):
         (attempt / name).mkdir()
@@ -89,15 +90,15 @@ def batch_trial(args, routes, attempt, gpu_uuid):
         agent=str(ROOT / 'evaluation/full_diffusion_fast_agent.py'),
         agent_config=str(args.checkpoint), carla_root=None, python=sys.executable, resume=False)
     plan_args.carla_root = str(args.carla_root) if args.carla_root else None
-    save(attempt / 'batch.json', {'routes': routes, 'inference_steps': 100,
+    save(attempt / 'batch.json', {'routes': routes, 'inference_steps': inference_steps,
                                  'route_reset': 'Unused preloaded first episode; later routes full episode reload',
-                                 'sampler': 'Original VPFullDiffusion, unmodified'})
+                                 'sampler': getattr(args, 'sampler_name', 'Original VPFullDiffusion, unmodified')})
     try:
         plan = build_plan(plan_args)
     except OSError as exc:
         failure = {'classification': 'infrastructure_error', 'routes': routes,
                    'supervisor_reason': 'runtime_preflight_oserror', 'error': repr(exc),
-                   'elapsed_seconds': 0, 'inference_steps': 100}
+                   'elapsed_seconds': 0, 'inference_steps': inference_steps}
         save(attempt / 'summary.json', failure)
         return {route: {**failure, 'route_id': route, 'attempt': str(attempt)} for route in routes}
     plan['output_dir'] = str(attempt)
@@ -170,7 +171,7 @@ def batch_trial(args, routes, attempt, gpu_uuid):
                 reason = 'route_wall_timeout'
             result = read(attempt / 'results.json', {})
             just_finished, last_finish = publish_completed(
-                result, routes, attempt, args.output_root, last_finish)
+                result, routes, attempt, args.output_root, last_finish, inference_steps)
             published.update(just_finished)
             if now - last_resource > 60:
                 sample = resources()
@@ -191,7 +192,7 @@ def batch_trial(args, routes, attempt, gpu_uuid):
         returncode = proc.wait()
     stop_server(attempt, args.job_id)
     result = read(attempt / 'results.json', {})
-    just_finished, last_finish = publish_completed(result, routes, attempt, args.output_root, last_finish)
+    just_finished, last_finish = publish_completed(result, routes, attempt, args.output_root, last_finish, inference_steps)
     published.update(just_finished)
     server_exit = read(attempt / 'server_exit.json', {})
     records = {route_number(r): r for r in result.get('_checkpoint', {}).get('records', [])}
@@ -210,7 +211,7 @@ def batch_trial(args, routes, attempt, gpu_uuid):
                            'status': record.get('status') if record else 'Not started',
                            'record': record, 'attempt': str(attempt), 'returncode': returncode,
                            'supervisor_reason': failure_reason, 'server_exit': server_exit,
-                           'shared_server': True, 'inference_steps': 100}
+                           'shared_server': True, 'inference_steps': inference_steps}
         save(attempt / f'route_{route}.summary.json', outcomes[route])
     group_class = ('driving_result' if all(x['classification'] == 'driving_result' for x in outcomes.values())
                    else 'infrastructure_error' if any(x['classification'] == 'infrastructure_error' for x in outcomes.values())

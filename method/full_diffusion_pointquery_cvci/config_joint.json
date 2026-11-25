@@ -1,0 +1,283 @@
+{
+  "method": "full_diffusion_pointquery_cvci",
+  "architecture": "pointquery_cvci_shared_future_independent_readers_v1",
+  "controller": "automot_temporal_pid_v1",
+  "training_python": "../ENV/recogdrive-B200/bin/python",
+  "index_directory": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/data_protocols/pdm_dev44_fixed_v1",
+  "normalization_file": "data/full_diffusion/pdm_lite_seed901_v3_normalization.json",
+  "backbone_directory": "ckps/full_diffusion/backbone/all_towns_seed1",
+  "sensor_snapshot": "data/full_diffusion/pdm_lite_seed901_sensor_snapshot_v1",
+  "master_address": "10.124.70.47",
+  "master_port": 29873,
+  "seed": 901,
+  "epochs": 10,
+  "world_size": 8,
+  "workers_per_rank": 4,
+  "history_stride": 1,
+  "observation_interval_seconds": 0.25,
+  "history_encode_chunk": 8,
+  "learning_rate": 0.0003,
+  "weight_decay": 0.0001,
+  "gradient_clip": 1.0,
+  "checkpoint_every_updates": 500,
+  "log_every_updates": 20,
+  "validation_sample_batches_per_rank": 2,
+  "precision": "bf16",
+  "normalization_std_floor": 0.1,
+  "runtime": {
+    "loader_timeout_seconds": 180,
+    "control_timeout_seconds": 240,
+    "startup_timeout_seconds": 900,
+    "rank_stall_seconds": 420,
+    "monitor_stale_seconds": 120,
+    "monitor_interval_seconds": 5,
+    "monitor_export_seconds": 30,
+    "monitor_buffer_samples": 72,
+    "coordinator_interval_seconds": 10,
+    "max_recoveries": 3
+  },
+  "model": {
+    "path_points": 10,
+    "temporal_points": 6,
+    "slot_width": 64,
+    "d_model": 256,
+    "bev_channels": 64,
+    "d_ffn": 1024,
+    "layers": 2,
+    "dropout": 0.1,
+    "history_frames": 2,
+    "behavior_width": 128,
+    "path_scale": 20.0,
+    "speed_scale": 20.0,
+    "temporal_interval_seconds": 0.5,
+    "samples_per_point": 5,
+    "sampling_radius_m": 2.0,
+    "initial_offset_m": 1.0
+  },
+  "labels": {
+    "raw_measurement_interval_seconds": 0.25,
+    "temporal_interval_seconds": 0.5,
+    "temporal_points": 6,
+    "behavior_horizons_seconds": [
+      1.0,
+      2.0,
+      3.0
+    ],
+    "behavior_classes": [
+      "STOP",
+      "DECELERATE",
+      "KEEP",
+      "ACCELERATE"
+    ],
+    "stop_speed_mps": 0.3,
+    "speed_change_mps": 0.5
+  },
+  "loss": {
+    "spatial_weight": 1.0,
+    "temporal_weight": 2.0,
+    "behavior_weight": 0.4,
+    "temporal_interval_weights": [
+      3,
+      3,
+      2,
+      2,
+      1,
+      1
+    ]
+  },
+  "diffusion": {
+    "train_steps": 1000,
+    "beta_min": 0.1,
+    "beta_d": 19.9,
+    "inference_steps": 25
+  },
+  "conditioning": "tfpp_ego11_plus_state1",
+  "global_batch": 256,
+  "rank_batches": [
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32
+  ],
+  "data_protocol": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/data_protocols/pdm_dev44_fixed_v1/protocol.json",
+  "output": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/full_diffusion_pointquery_cvci_sharedkv_8a100_20261124_v1",
+  "retained_index": "data/full_diffusion/pdm_lite_seed901",
+  "planner_checkpoint": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/full_diffusion_pointquery_8a100_20261124_v1/best.pt",
+  "planner_checkpoint_sha256": "f1b29877c050c3666d482e0fc2efca1d6417d743620a920325db24327036d66f",
+  "planner_initialization": "strict_completed_pointquery_epoch10",
+  "train_stop_unix": 1795625244.0,
+  "perception_chunk": 32,
+  "training": {
+    "log_every": 20,
+    "checkpoint_every": 250,
+    "epochs": 10,
+    "world_size": 8,
+    "prefetch_factor": 2,
+    "gradient_clip": 1.0,
+    "batch_per_gpu": 32,
+    "weight_decay": 0.0001,
+    "epoch_definition": "927 updates of 256 anchors; disjoint route streams continue across sample-budget epochs; 237312 anchor budget per epoch",
+    "accumulation_steps": 1,
+    "learning_rate": 0.0003,
+    "microbatch_per_gpu": 32,
+    "rolling_inference_steps": 25,
+    "backfill_missing_prior": true,
+    "validation_batch_per_rank": 8,
+    "adam_betas": [
+      0.9,
+      0.999
+    ],
+    "adam_eps": 1E-08,
+    "world_weight_decay": 0.0001,
+    "world_gradient_clip": 1.0,
+    "learning_rates": {
+      "world_history": 3E-06,
+      "world_action": 1E-05,
+      "world_dynamics": 1E-05,
+      "world_decoder": 2E-05
+    }
+  },
+  "validation": {
+    "selection_metric": "route_macro_future_ade_m",
+    "samples": 2223,
+    "fixed_noise_seed": 901700,
+    "inference_steps": 25,
+    "automatic_closed_loop": true,
+    "routes": 44,
+    "virtual_shards": 8,
+    "closed_loop_routes": 220
+  },
+  "jobs": {
+    "13188133": {
+      "host": "rng-dl01-w080",
+      "gpu_uuids": [
+        "GPU-d5652242-a468-bd54-7833-c99f757fa0b2",
+        "GPU-1efc671f-5747-8214-d641-fe784fce5c5b"
+      ],
+      "eval_cpus_per_gpu": 8,
+      "workers_per_rank": 6,
+      "node_rank": 2,
+      "address": "10.124.70.137",
+      "deadline_unix": 1795919310.0
+    },
+    "13177034": {
+      "host": "rng-dl01-w006",
+      "gpu_uuids": [
+        "GPU-667e60cf-7784-8d67-794f-a05723390449",
+        "GPU-d86c1b86-3e0c-76d3-dbd0-8f52666710fa"
+      ],
+      "eval_cpus_per_gpu": 4,
+      "workers_per_rank": 3,
+      "node_rank": 1,
+      "address": "10.124.70.48",
+      "deadline_unix": 1795627044.0
+    },
+    "13188134": {
+      "host": "rng-dl01-w012",
+      "gpu_uuids": [
+        "GPU-e99c3eda-fcee-c73f-13d9-29a9ff9b4869",
+        "GPU-ec94a3e5-ad8f-e9ac-3b71-5fe51306d0e0"
+      ],
+      "eval_cpus_per_gpu": 8,
+      "workers_per_rank": 6,
+      "node_rank": 3,
+      "address": "10.124.70.54",
+      "deadline_unix": 1796064491.0
+    },
+    "13188135": {
+      "host": "rng-dl01-w005",
+      "gpu_uuids": [
+        "GPU-995a83a0-4897-fc64-3550-2e8cd068ee31",
+        "GPU-ffd2fb02-008f-dff3-7bb8-b7276bb642c8"
+      ],
+      "eval_cpus_per_gpu": 8,
+      "workers_per_rank": 6,
+      "node_rank": 0,
+      "address": "10.124.70.47",
+      "deadline_unix": 1796087191.0
+    }
+  },
+  "world": {
+    "checkpoint": "/fs/scratch/rb-bd-dlp-rng-dl01-cr-tfx/special/tfx-901/rai-ap/workspace/nix3sgh/WAMPC-V4-BCDE-Joint-20261112/ckpt/irwm_bev_t_large/best.pt",
+    "checkpoint_sha256": "b83eba4a33bb90031c43fea668087346a7e5a6af8aada53a8c5094f6f0703c2a",
+    "tuning": "all_bcde_parameters"
+  },
+  "training_contract": {
+    "version": "fresh_world_4hz_v1",
+    "anchor_interval_seconds": 0.25,
+    "history_times_seconds": [
+      -0.5,
+      -0.25,
+      0.0
+    ],
+    "prior_age_seconds": 0.25,
+    "cache_age_seconds": 0.0,
+    "future_map_times_seconds": [
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5
+    ],
+    "prior_source": "detached_model_temporal_prediction",
+    "pose_source": "observed_current_ego_pose",
+    "tail_policy": "mask_outside_previous_plan"
+  },
+  "future_sampler": {
+    "points_per_map": [
+      9,
+      9,
+      16,
+      25,
+      36
+    ],
+    "window_m": [
+      6.0,
+      3.0
+    ],
+    "horizon_window_scale": [
+      0.5,
+      0.625,
+      0.75,
+      0.875,
+      1.0
+    ]
+  },
+  "world_supervision": {
+    "weight": 0.5,
+    "loss": {
+      "nmse": 1.0,
+      "corridor_nmse": 0.5,
+      "cosine": 0.05,
+      "dynamic_nmse": 0.25,
+      "temporal_nmse": 0.1,
+      "multiscale_nmse": 0.1,
+      "pool_scales": [
+        2,
+        4
+      ],
+      "dynamic_weight_cap": 5.0
+    }
+  },
+  "future_readout": {
+    "initial_probability": 0.01,
+    "gate": "independent_per_branch_layer_channel_sigmoid",
+    "shared": "single_future_256_token_pool",
+    "projection": "future_only_conv3x3_relu64to256",
+    "points_per_map": [
+      9,
+      9,
+      16,
+      25,
+      36
+    ],
+    "geometry_time_bias": "spatial_positions_and_temporal_cumsum_with_true_query_times",
+    "insertion": "after_ego12_before_ffn",
+    "position_frame": "fixed_input_ego_xy_width_x"
+  },
+  "experiment": "pointquery_cvci_sharedkv_8a100_e10_s901_20261124_v1"
+}

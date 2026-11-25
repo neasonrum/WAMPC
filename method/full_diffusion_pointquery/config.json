@@ -1,0 +1,187 @@
+{
+  "method": "full_diffusion_pointquery",
+  "architecture": "independent_point_query_learned_local_bev_v1",
+  "controller": "automot_temporal_pid_v1",
+  "training_python": "../ENV/recogdrive-B200/bin/python",
+  "index_directory": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/data_protocols/pdm_dev44_fixed_v1",
+  "normalization_file": "data/full_diffusion/pdm_lite_seed901_v3_normalization.json",
+  "backbone_directory": "ckps/full_diffusion/backbone/all_towns_seed1",
+  "sensor_snapshot": "data/full_diffusion/pdm_lite_seed901_sensor_snapshot_v1",
+  "master_address": "10.124.70.47",
+  "master_port": 29865,
+  "seed": 901,
+  "epochs": 10,
+  "world_size": 8,
+  "workers_per_rank": 4,
+  "history_stride": 1,
+  "observation_interval_seconds": 0.25,
+  "history_encode_chunk": 8,
+  "learning_rate": 0.0003,
+  "weight_decay": 0.0001,
+  "gradient_clip": 1.0,
+  "checkpoint_every_updates": 500,
+  "log_every_updates": 20,
+  "validation_sample_batches_per_rank": 2,
+  "precision": "bf16",
+  "normalization_std_floor": 0.1,
+  "runtime": {
+    "loader_timeout_seconds": 180,
+    "control_timeout_seconds": 240,
+    "startup_timeout_seconds": 900,
+    "rank_stall_seconds": 420,
+    "monitor_stale_seconds": 120,
+    "monitor_interval_seconds": 5,
+    "monitor_export_seconds": 30,
+    "monitor_buffer_samples": 72,
+    "coordinator_interval_seconds": 10,
+    "max_recoveries": 3
+  },
+  "model": {
+    "path_points": 10,
+    "temporal_points": 6,
+    "slot_width": 64,
+    "d_model": 256,
+    "bev_channels": 64,
+    "d_ffn": 1024,
+    "layers": 2,
+    "dropout": 0.1,
+    "history_frames": 2,
+    "behavior_width": 128,
+    "path_scale": 20.0,
+    "speed_scale": 20.0,
+    "temporal_interval_seconds": 0.5,
+    "samples_per_point": 5,
+    "sampling_radius_m": 2.0,
+    "initial_offset_m": 1.0
+  },
+  "labels": {
+    "raw_measurement_interval_seconds": 0.25,
+    "temporal_interval_seconds": 0.5,
+    "temporal_points": 6,
+    "behavior_horizons_seconds": [
+      1.0,
+      2.0,
+      3.0
+    ],
+    "behavior_classes": [
+      "STOP",
+      "DECELERATE",
+      "KEEP",
+      "ACCELERATE"
+    ],
+    "stop_speed_mps": 0.3,
+    "speed_change_mps": 0.5
+  },
+  "loss": {
+    "spatial_weight": 1.0,
+    "temporal_weight": 2.0,
+    "behavior_weight": 0.4,
+    "temporal_interval_weights": [
+      3,
+      3,
+      2,
+      2,
+      1,
+      1
+    ]
+  },
+  "diffusion": {
+    "train_steps": 1000,
+    "beta_min": 0.1,
+    "beta_d": 19.9,
+    "inference_steps": 25
+  },
+  "conditioning": "tfpp_ego11_plus_state1",
+  "global_batch": 256,
+  "rank_batches": [
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32
+  ],
+  "data_protocol": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/data_protocols/pdm_dev44_fixed_v1/protocol.json",
+  "output": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/full_diffusion_pointquery_8a100_20261124_v1",
+  "retained_index": "data/full_diffusion/pdm_lite_seed901",
+  "planner_checkpoint": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/results/full_diffusionv3_ego12_10a100_20261121_v1/epoch_10.pt",
+  "planner_checkpoint_sha256": "5e40bebfe95ea45092431071b35a4d8da94afe212c18b9279c933bd64948573b",
+  "planner_initialization": "compatible_original_ego12_epoch10",
+  "train_stop_unix": 1795625244.0,
+  "perception_chunk": 32,
+  "training": {
+    "log_every": 20,
+    "checkpoint_every": 250,
+    "epochs": 10,
+    "world_size": 8,
+    "prefetch_factor": 2,
+    "gradient_clip": 1.0,
+    "batch_per_gpu": 32,
+    "weight_decay": 0.0001,
+    "epoch_definition": "floor(train_samples/global_batch); reshuffled each epoch; drop 39 anchors per epoch",
+    "accumulation_steps": 1,
+    "learning_rate": 0.0003
+  },
+  "validation": {
+    "selection_metric": "route_macro_future_ade_m",
+    "samples": 2223,
+    "fixed_noise_seed": 901700,
+    "inference_steps": 25,
+    "automatic_closed_loop": true,
+    "routes": 44,
+    "virtual_shards": 8,
+    "closed_loop_routes": 220
+  },
+  "jobs": {
+    "13188133": {
+      "host": "rng-dl01-w080",
+      "gpu_uuids": [
+        "GPU-d5652242-a468-bd54-7833-c99f757fa0b2",
+        "GPU-1efc671f-5747-8214-d641-fe784fce5c5b"
+      ],
+      "eval_cpus_per_gpu": 8,
+      "workers_per_rank": 6,
+      "node_rank": 2,
+      "address": "10.124.70.137",
+      "deadline_unix": 1795919310.0
+    },
+    "13177034": {
+      "host": "rng-dl01-w006",
+      "gpu_uuids": [
+        "GPU-667e60cf-7784-8d67-794f-a05723390449",
+        "GPU-d86c1b86-3e0c-76d3-dbd0-8f52666710fa"
+      ],
+      "eval_cpus_per_gpu": 4,
+      "workers_per_rank": 3,
+      "node_rank": 1,
+      "address": "10.124.70.48",
+      "deadline_unix": 1795627044.0
+    },
+    "13188134": {
+      "host": "rng-dl01-w012",
+      "gpu_uuids": [
+        "GPU-e99c3eda-fcee-c73f-13d9-29a9ff9b4869",
+        "GPU-ec94a3e5-ad8f-e9ac-3b71-5fe51306d0e0"
+      ],
+      "eval_cpus_per_gpu": 8,
+      "workers_per_rank": 6,
+      "node_rank": 3,
+      "address": "10.124.70.54",
+      "deadline_unix": 1796064491.0
+    },
+    "13188135": {
+      "host": "rng-dl01-w005",
+      "gpu_uuids": [
+        "GPU-995a83a0-4897-fc64-3550-2e8cd068ee31",
+        "GPU-ffd2fb02-008f-dff3-7bb8-b7276bb642c8"
+      ],
+      "eval_cpus_per_gpu": 8,
+      "workers_per_rank": 6,
+      "node_rank": 0,
+      "address": "10.124.70.47",
+      "deadline_unix": 1796087191.0
+    }
+  }
+}

@@ -16,6 +16,10 @@ def get_entry_point():
 class FullDiffusionTiming:
     method = 'full_diffusion2'
     sampler_type = VPFullDiffusion
+    inference_steps = 100
+
+    def sampler_and_steps(self, network):
+        return network.diffusion, network.run_config['diffusion']['inference_steps']
     log_prefix = 'FULL_DIFFUSION2'
 
     def event(self, event, **values):
@@ -31,11 +35,12 @@ class FullDiffusionTiming:
         self._last_path = None
         self.event('agent_setup_started')
         super().setup(path_to_conf_file, self.route_name, traffic_manager)
-        if self.nets[0].run_config['diffusion']['inference_steps'] != 100:
-            raise ValueError('Exactly 100 diffusion steps are required')
+        sampler, steps = self.sampler_and_steps(self.nets[0])
+        if steps != self.inference_steps:
+            raise ValueError(f'Exactly {self.inference_steps} diffusion steps are required')
         if self.nets[0].run_config.get('method') != self.method:
             raise ValueError('The checkpoint method differs from the evaluation agent')
-        if type(self.nets[0].diffusion) is not self.sampler_type:
+        if type(sampler) is not self.sampler_type:
             raise TypeError(f'The original {self.sampler_type.__name__} sampler is required')
         forward = self.nets[0].forward
 
@@ -48,7 +53,7 @@ class FullDiffusionTiming:
             return result
 
         self.nets[0].forward = timed_forward
-        self.event('agent_setup_ready', inference_steps=100, sampler=self.sampler_type.__name__,
+        self.event('agent_setup_ready', inference_steps=steps, sampler=self.sampler_type.__name__,
                    sampler_replaced=False, method=self.method)
         print(f'{self.log_prefix}_READY route={self.route_name}', flush=True)
 

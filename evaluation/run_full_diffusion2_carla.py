@@ -33,9 +33,18 @@ from evaluation.run_full_diffusion_carla_fast import stop_evaluator
 import evaluation.run_full_diffusion_carla_fast as fast
 
 
+POLICY_STEPS = {'full_diffusion2': 100, 'full_diffusionv3': 100, 'bridgedrive': 20, 'bridgedrivev2': 20,
+                'full_diffusionv3_ego12': 25}
+BRIDGEDRIVE_METHODS = ('bridgedrive', 'bridgedrivev2')
+NONCACHE_METHODS = BRIDGEDRIVE_METHODS + ('full_diffusionv3_ego12',)
+
+
 def configure_policy(configuration, method):
     agents = {'full_diffusion2': 'full_diffusion2_fast_agent.py',
-              'full_diffusionv3': 'full_diffusionv3_fast_agent.py'}
+              'full_diffusionv3': 'full_diffusionv3_fast_agent.py',
+              'bridgedrive': 'bridgedrive_fast_agent.py',
+              'bridgedrivev2': 'bridgedrivev2_fast_agent.py',
+              'full_diffusionv3_ego12': 'v3_ego12_fast_agent.py'}
     if method not in agents:
         raise ValueError(f'Unsupported temporal planner: {method}')
     configuration.method = method
@@ -191,9 +200,11 @@ def lane(args):
                     sequence += 3
                     result = {'route_id': route, 'classification': 'infrastructure_error',
                               'supervisor_reason': 'carla_server_startup', 'error': repr(exc),
-                              'attempt': str(attempt), 'inference_steps': 100, 'queue_worker': worker}
+                              'attempt': str(attempt), 'inference_steps': args.inference_steps, 'queue_worker': worker}
                     save(route_root / 'summary.json', result)
                     queue.finish(route, worker, result)
+                    if args.method in BRIDGEDRIVE_METHODS:
+                        raise RuntimeError(f'CARLA startup failed for {worker}') from exc
                     continue
                 server_uses = 0
             args._external_server = owner.process if owner is not None else None
@@ -226,12 +237,18 @@ def stop_owned(process):
             process.wait(timeout=5)
 
 
+def nonreclaimable(sample):
+    return int(sample['job_memory.noncache'])
+
+
 def parent(args):
     check_job(args.job_id)
     args.run_root = checked_run_root(args.run_root)
     args.checkpoint = checked_evaluation_path(args.checkpoint)
     assert args.job_id in Path('/proc/self/cgroup').read_text()
-    assert Path(sys.prefix).resolve() == (ROOT / '.venvs/full-diffusion-carla').resolve()
+    expected_prefix = (ROOT.parent / 'ENV/recogdrive-B200' if args.method in NONCACHE_METHODS
+                       else ROOT / '.venvs/full-diffusion-carla')
+    assert Path(sys.prefix).resolve() == expected_prefix.resolve()
     prepared_hashes = read(args.run_root / 'source_sha256.json')
     if prepared_hashes:
         changed = [name for name, digest in prepared_hashes.items()
@@ -280,7 +297,10 @@ def parent(args):
     host_limit = sample.get('job_memory.max', 'max')
     if host_limit == 'max' or int(host_limit) < 64*1024**3:
         raise RuntimeError('A verified job cgroup memory limit of at least 64 GiB is required')
-    current = int(sample['job_memory.current'])
+    # Training can leave mostly reclaimable filesystem pages charged to this job.
+    # Keep the anonymous/shared-memory headroom check and the 64 GiB soft stop.
+    current = (nonreclaimable(sample) if args.method in NONCACHE_METHODS
+               else int(sample['job_memory.current']))
     if current + 40*1024**3 > .85 * int(host_limit):
         raise RuntimeError('Insufficient cgroup RAM headroom for a 40 GiB node peak')
     assert (args.carla_root / 'runtime_ready.json').is_file()
@@ -306,13 +326,24 @@ def parent(args):
                'method/full_diffusion2/inference/carla_agent.py', 'method/full_diffusion2/inference/policy.py',
                'method/full_diffusion2/model.py', 'method/full_diffusion2/perception.py',
                'method/full_diffusion2/data.py', 'method/full_diffusion2/snapshot.py')
-    if args.method == 'full_diffusionv3':
+    if args.method in ('full_diffusionv3', 'full_diffusionv3_ego12', 'bridgedrive'):
         sources += ('method/full_diffusionv3/__init__.py', 'method/full_diffusionv3/model.py',
                     'method/full_diffusionv3/diffusion.py', 'method/full_diffusionv3/inference/policy.py',
                     'method/full_diffusionv3/inference/carla_agent.py',
                     'evaluation/full_diffusionv3_fast_agent.py')
+    if args.method == 'bridgedrive':
+        sources += ('method/bridgedrive/carla_agent.py', 'method/bridgedrive/policy.py',
+                    'method/bridgedrive/model.py',
+                    'evaluation/bridgedrive_fast_agent.py')
+    if args.method == 'bridgedrivev2':
+        sources += ('method/bridgedrivev2/carla_agent.py', 'method/bridgedrivev2/policy.py',
+                    'method/bridgedrivev2/model.py', 'method/bridgedrive/lead_port/model.py',
+                    'method/bridgedrive/model.py', 'evaluation/bridgedrivev2_fast_agent.py')
+    if args.method == 'full_diffusionv3_ego12':
+        sources += ('method/full_diffusionv3_ego12/model.py', 'method/full_diffusionv3_ego12/inference/carla_agent.py',
+                    'method/full_diffusionv3_ego12/inference/policy.py', 'evaluation/v3_ego12_fast_agent.py')
     identity = {'checkpoint_sha256': hashlib.sha256(args.checkpoint.read_bytes()).hexdigest(),
-                'seed': args.seed, 'inference_steps': 100, 'backend': args.backend, 'method': args.method,
+                'seed': args.seed, 'inference_steps': args.inference_steps, 'backend': args.backend, 'method': args.method,
                 'source_sha256': {p: hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in sources}}
     if prepared_hashes:
         identity['prepared_source_sha256'] = prepared_hashes
@@ -387,7 +418,9 @@ def parent(args):
                 with (group / 'resources.jsonl').open('a') as handle:
                     handle.write(json.dumps(sample) + '\n')
                 memory = int(sample.get('job_memory.current', sample.get('memory.current', '0')))
-                noncache = int(sample['job_memory.noncache'])
+                noncache = nonreclaimable(sample) if args.method in BRIDGEDRIVE_METHODS else int(sample['job_memory.noncache'])
+                if args.method in NONCACHE_METHODS:
+                    memory = noncache
                 if noncache > 64*1024**3:
                     stopped = 'soft_host_noncache_memory_limit'
                 memory_limit = sample.get('job_memory.max', 'max')
@@ -414,7 +447,7 @@ def parent(args):
                     'states': {r: v['state'] for r, v in state['items'].items()}, 'lanes': args.lanes,
                     'DS': sum(r['scores']['score_composed'] for r in records)/len(records) if records else None,
                     'RC': sum(r['scores']['score_route'] for r in records)/len(records) if records else None,
-                    'backend': args.backend, 'unix': time.time(), 'inference_steps': 100}
+                    'backend': args.backend, 'unix': time.time(), 'inference_steps': args.inference_steps}
             save(group/'completed.json', done)
             print(json.dumps(done), flush=True)
     finally:
@@ -431,7 +464,7 @@ def parent(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--role', choices=('parent', 'lane'), default='parent')
-    parser.add_argument('--method', choices=('full_diffusion2', 'full_diffusionv3'), default='full_diffusion2')
+    parser.add_argument('--method', choices=tuple(POLICY_STEPS), default='full_diffusion2')
     parser.add_argument('--cpus-per-gpu', type=int, default=4)
     parser.add_argument('--server-mode', choices=('cold', 'warm'), default='warm')
     parser.add_argument('--startup-wait', choices=('fixed30', 'rpc'), default='rpc')
@@ -454,6 +487,11 @@ if __name__ == '__main__':
     parser.add_argument('--routes-per-server', type=int, default=32)
     parser.add_argument('--capture-first-policy-call', action='store_true')
     args = parser.parse_args()
+    args.inference_steps = POLICY_STEPS[args.method]
+    if args.method in BRIDGEDRIVE_METHODS:
+        args.sampler_name = 'VPBridge'
+    elif args.method == 'full_diffusionv3_ego12':
+        args.sampler_name = 'SpatialTemporalVPFullDiffusion (DDIM 25)'
     for name in ('run_root', 'checkpoint', 'carla_root'):
         path = checked_run_root(getattr(args, name)) if name == 'run_root' else checked_evaluation_path(getattr(args, name))
         setattr(args, name, path)

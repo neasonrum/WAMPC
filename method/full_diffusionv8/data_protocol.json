@@ -1,0 +1,46 @@
+{
+  "protocol_id": "wmmpc_pdmlite_dev44_fixed_v1",
+  "source_run": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/full_diffusionv8_ego12_joint_8b200_20261122_v1",
+  "index_directory": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/data_protocols/pdm_dev44_fixed_v1",
+  "index_columns": [
+    "route_id",
+    "metadata_slot",
+    "raw_frame_id"
+  ],
+  "train_samples": 237351,
+  "train_routes": 4796,
+  "validation_samples": 2223,
+  "validation_routes": 44,
+  "route_sets_disjoint": true,
+  "files_sha256": {
+    "manifest.json": "85de4059dc81cfc344a1cf201e5f639ca84d6e624978ccac3648e01a7c26ad3e",
+    "routes.json": "de6e32e33dde2f628ddb21e4db568bb2b30907db4a460f292be8340df4b4cdc6",
+    "train.npy": "08978759416c4eb07ab47d7a0da6f61cc4fbe7e2c3628230ace8032424951d90",
+    "val.npy": "172bd31f2814787f1dd415e5e23ef97838cb14a4249db33bd50ff8036ac7e13a",
+    "train_world_mask.npy": "d10901fa444b98bbffc4a5bafdb9bdb6173747566bb94e9f21e6611c59dfaa71",
+    "val_world_mask.npy": "8ec2a72c8a1afb673ff340d4c41543bc3a505f3367aa78400505077b920098c5",
+    "train_routes.json": "64dd16fba9af7e3f42965decec773ca2f5567c84dc73dba41514d6188b9c4ecb",
+    "validation_routes.json": "35d75457095508712359947b6bf09e77a7fee79abac7bf01472ef8e041d59c2f"
+  },
+  "reference_normalization": {
+    "path": "/fs/scratch/rb-bd-dlp-rng-dl01-cr-tfx/special/tfx-901/rai-ap/workspace/nix3sgh/WMMPC/data/full_diffusion/pdm_lite_seed901_v3_normalization.json",
+    "sha256": "aec4d8b42e1a84489ef7bf56c7369a85b35888ba07dc03c42b838000f3b767f2"
+  },
+  "reference_evaluation": {
+    "aggregate": "route_macro",
+    "samples": "all fixed val.npy rows",
+    "diffusion_steps": 25,
+    "virtual_validation_shards": 8,
+    "seed_per_shard": "901700 + shard_id",
+    "temporal_horizons_seconds": [
+      0.5,
+      1,
+      1.5,
+      2,
+      2.5,
+      3
+    ]
+  },
+  "policy": "Share these exact route/frame lists across future E2E, WM, and joint comparisons. Record task-specific label availability. Report evaluation settings and compare metrics on the same fixed rows. Version intentional data changes explicitly.",
+  "training_job_modified": false
+}

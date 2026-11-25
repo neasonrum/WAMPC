@@ -1,0 +1,238 @@
+{
+  "method": "full_diffusionv8",
+  "architecture": "dual_query_dit_future_adapter_v8_ego12",
+  "controller": "automot_temporal_pid_v1",
+  "seed": 901,
+  "precision": "bf16",
+  "observation_interval_seconds": 0.25,
+  "backbone_directory": "ckps/full_diffusion/backbone/all_towns_seed1",
+  "data_root": "/share/home/u21012/data/bench2drive-PDMlite",
+  "world": {
+    "checkpoint": "/fs/scratch/rb-bd-dlp-rng-dl01-cr-tfx/special/tfx-901/rai-ap/workspace/nix3sgh/WAMPC-V4-BCDE-Joint-20261112/ckpt/irwm_bev_t_large/best.pt",
+    "checkpoint_sha256": "b83eba4a33bb90031c43fea668087346a7e5a6af8aada53a8c5094f6f0703c2a",
+    "tuning": "all_bcde_parameters"
+  },
+  "training_contract": {
+    "version": "fresh_world_4hz_v1",
+    "anchor_interval_seconds": 0.25,
+    "history_times_seconds": [
+      -0.5,
+      -0.25,
+      0.0
+    ],
+    "prior_age_seconds": 0.25,
+    "cache_age_seconds": 0.0,
+    "future_map_times_seconds": [
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5
+    ],
+    "prior_source": "detached_model_temporal_prediction",
+    "pose_source": "observed_current_ego_pose",
+    "tail_policy": "mask_outside_previous_plan"
+  },
+  "future_sampler": {
+    "points_per_map": [
+      9,
+      9,
+      16,
+      25,
+      36
+    ],
+    "window_m": [
+      6.0,
+      3.0
+    ],
+    "horizon_window_scale": [
+      0.5,
+      0.625,
+      0.75,
+      0.875,
+      1.0
+    ]
+  },
+  "labels": {
+    "raw_measurement_interval_seconds": 0.25,
+    "temporal_interval_seconds": 0.5,
+    "temporal_points": 6,
+    "behavior_horizons_seconds": [
+      1.0,
+      2.0,
+      3.0
+    ],
+    "behavior_classes": [
+      "STOP",
+      "DECELERATE",
+      "KEEP",
+      "ACCELERATE"
+    ],
+    "stop_speed_mps": 0.3,
+    "speed_change_mps": 0.5
+  },
+  "loss": {
+    "spatial_weight": 1.0,
+    "temporal_weight": 2.0,
+    "behavior_weight": 0.2,
+    "speed_supervision": {
+      "weight": 0.75,
+      "interval_weights": [
+        1.0,
+        3.0,
+        0.5,
+        0.5,
+        0.25,
+        0.25
+      ],
+      "huber_beta_mps": 0.5,
+      "transition_mps": 1.0,
+      "event_multiplier": 1.5
+    },
+    "temporal_interval_weights": [
+      3,
+      3,
+      2,
+      2,
+      1,
+      1
+    ]
+  },
+  "diffusion": {
+    "inference_steps": 25,
+    "train_steps": 1000,
+    "beta_min": 0.1,
+    "beta_d": 19.9
+  },
+  "training": {
+    "epochs": 10,
+    "world_size": 8,
+    "batch_per_gpu": 32,
+    "workers_per_rank": 4,
+    "warmup_updates": 865,
+    "minimum_lr_ratio": 0.1,
+    "pretrained_weight_decay": 0.01,
+    "adam_betas": [
+      0.9,
+      0.999
+    ],
+    "adam_eps": 1e-08,
+    "planner_tuning": {
+      "schema": "random_planner_v1",
+      "enabled": true,
+      "planner_start_update": 0,
+      "context_start_update": 0
+    },
+    "log_every": 20,
+    "checkpoint_every": 250,
+    "gradient_clip": 1.0,
+    "max_noise_fraction": 0.5,
+    "rolling_inference_steps": 25,
+    "backfill_missing_prior": true,
+    "weight_decay": 0.01,
+    "learning_rates": {
+      "new": 0.0003,
+      "gate": 0.0003,
+      "distance": 0.0001,
+      "base_output": 0.0003,
+      "base_decoder_late": 0.0003,
+      "base_decoder_early": 0.0003,
+      "base_query": 0.0003,
+      "base_context": 0.0003,
+      "base_behavior": 0.0003,
+      "world_history": 3e-06,
+      "world_action": 1e-05,
+      "world_dynamics": 1e-05,
+      "world_decoder": 2e-05
+    },
+    "epoch_definition": "ceil(train_items/global_batch); one item = one current anchor; disjoint route streams continue across sample-budget epochs",
+    "microbatch_per_gpu": 32,
+    "world_weight_decay": 0.0001,
+    "world_gradient_clip": 1.0,
+    "prefetch_factor": 2,
+    "validation_batch_per_rank": 8
+  },
+  "planner_initialization": "random",
+  "experiment": "v8_ego12_joint_8b200_e10_s901_20261122_v1",
+  "world_supervision": {
+    "weight": 0.5,
+    "loss": {
+      "nmse": 1.0,
+      "corridor_nmse": 0.5,
+      "cosine": 0.05,
+      "dynamic_nmse": 0.25,
+      "temporal_nmse": 0.1,
+      "multiscale_nmse": 0.1,
+      "pool_scales": [
+        2,
+        4
+      ],
+      "dynamic_weight_cap": 5.0
+    }
+  },
+  "conditioning": "tfpp_ego11_plus_state1",
+  "retained_index": "data/full_diffusion/pdm_lite_seed901",
+  "sensor_snapshot": "data/full_diffusion/pdm_lite_seed901_sensor_snapshot_v1",
+  "teacher_cache": "data/irwm_bev/teacher_cache",
+  "normalization_file": "data/full_diffusion/pdm_lite_seed901_v3_normalization.json",
+  "world_source_index": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/irwm_bev_t_dt05_h3_b32_train_20261106_v1/index",
+  "output": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/full_diffusionv8_ego12_joint_8b200_20261122_v1",
+  "perception_chunk": 8,
+  "model": {
+    "path_points": 10,
+    "temporal_points": 6,
+    "slot_width": 64,
+    "d_model": 256,
+    "bev_channels": 64,
+    "d_ffn": 1024,
+    "layers": 2,
+    "dropout": 0.1,
+    "history_frames": 2,
+    "behavior_width": 128,
+    "path_scale": 20.0,
+    "speed_scale": 20.0,
+    "temporal_interval_seconds": 0.5
+  },
+  "validation": {
+    "routes": 44,
+    "selection_metric": "route_macro_future_ade_m",
+    "inference_steps": 25,
+    "every_epoch": true,
+    "fixed_noise_seed": 901700,
+    "automatic_closed_loop": true,
+    "closed_loop_routes": 220,
+    "closed_loop_inference_steps": 25
+  },
+  "jobs": {
+    "13166087": {
+      "node_rank": 0,
+      "host": "rng-dl01-w26n17",
+      "address": "10.124.71.37",
+      "workers_per_rank": 4,
+      "eval_cpus_per_gpu": 8
+    },
+    "13160031": {
+      "node_rank": 1,
+      "host": "rng-dl01-w26n12",
+      "address": "10.124.71.32",
+      "workers_per_rank": 4,
+      "eval_cpus_per_gpu": 8
+    },
+    "13166089": {
+      "node_rank": 2,
+      "host": "rng-dl01-w26n06",
+      "address": "10.124.71.26",
+      "workers_per_rank": 4,
+      "eval_cpus_per_gpu": 8
+    },
+    "13166090": {
+      "node_rank": 3,
+      "host": "rng-dl01-w26n09",
+      "address": "10.124.71.29",
+      "workers_per_rank": 4,
+      "eval_cpus_per_gpu": 8
+    }
+  },
+  "master_address": "10.124.71.37",
+  "master_port": 29883
+}

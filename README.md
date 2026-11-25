@@ -1,5 +1,18 @@
 # WMMPC
 
+**Current source snapshot (2026-11-25):** the latest evaluated implementation is
+[point-query diffusion with a jointly trained future-BEV WM](method/full_diffusion_pointquery_cvci/).
+Its pure E2E baseline is [full_diffusion_pointquery](method/full_diffusion_pointquery/).
+Start with the [current handoff guide](docs/POINTQUERY_CVCI_HANDOFF.md) for source
+entry points, dependency paths, the fixed dev44 split, and evaluation provenance.
+The selected epoch10 has 219 valid closed-loop results: DS 87.3749 and SR
+154/219 = 70.3196%; route 3800 remains an infrastructure failure after four CARLA
+SIGSEGV attempts. This is not a complete 220-route score. The navigation/target
+512-to-256 query-concatenation idea has not been implemented in this snapshot.
+
+The sections below describe the historical V3 release and its separately
+published checkpoint; they are retained for reference.
+
 Multi-method CARLA research workspace. As of 2026-11-09, the handoff target is
 Full Diffusion V3 (`independent_dual_query64`, `automot_temporal_pid_v1`), trained
 for 10 epochs / 43,210 updates using Garage/PDM-Lite and frozen TransFuser++
@@ -21,7 +34,7 @@ Code delivery does not include all inference/reproduction dependencies.
 | Item | Delivery status / action |
 | --- | --- |
 | V3 source and evaluation code | In this repository; clone with submodules. The verified source baseline before this documentation update is `d98a90b16619d585d6db400d3cfd924c35b225b6`. |
-| Our V3 planner checkpoint | Not published in Git. Deliver the evaluated epoch-10 / step-43,210 file identified below; do not substitute an older V1/V2/single-query model. |
+| Our V3 planner checkpoint | Included in Git at [ckps/full_diffusionv3/release/epoch_10.pt](ckps/full_diffusionv3/release/epoch_10.pt), published in commit `5a607916ac115a945e6eaaa9f6f75c7930dcd4ab`. Normal clones include this evaluated epoch-10 / step-43,210 file; no Git LFS setup is needed. |
 | Frozen perception source and weights | Source is the pinned CARLA Garage submodule. Weights/config can be obtained from the exact official archive below; re-uploading this backbone is unnecessary while that link is accessible. |
 | Environment | Installation recipe below; also attach current training and evaluation environment exports. Do not transfer a virtual environment as a portable installation. |
 | CARLA 0.9.15 and additional maps | Official download links below. The LSF evaluator additionally needs the validated private runtime configuration. |
@@ -40,7 +53,8 @@ Its size is 93,222,266 bytes and its SHA256 is:
 ea3eea848318c86cef17b9bc59a5a8c7fa17eed345123a5d359967a5323eb027
 ```
 
-Original-server source file, for the maintainer to deliver:
+Original training source, retained for provenance; recipients do not need this
+original-server path:
 
 ```text
 /fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/results/full_diffusionv3_dual_query64_automot_pid_train_20261104_v1/checkpoints/step_00043210_1793838564964641800.pt
@@ -157,23 +171,44 @@ modified backbone configuration needs to be supplied in place of those files.
 The official link, exact archive members, pinned source commit, and checksum
 are sufficient to identify the frozen backbone; it need not be re-uploaded
 if the recipient can download the upstream artifact. The V3 planner is our
-separate trained checkpoint and must still be delivered. V3 checkpoint
+separate trained checkpoint, now included in this repository rather than the
+upstream archive. V3 checkpoint
 normalization is embedded; closed-loop inference does not need the full
 Garage/PDM-Lite training dataset.
 
-### 3. Place our V3 checkpoint
+### 3. Verify our V3 checkpoint
 
-The V3 weight is not in the upstream Garage archive and has no published release
-URL yet. Obtain the file from the maintainer, then copy it without overwriting
-an existing release file and verify its identity:
+The evaluated V3 weight is included in normal clones from commit
+`5a607916ac115a945e6eaaa9f6f75c7930dcd4ab` onward. It is an ordinary Git file,
+not an LFS pointer, and is not in the upstream Garage archive. For an older
+checkout on `main`, update with `git pull --ff-only origin main`. Then verify:
 
 ```bash
-mkdir -p ckps/full_diffusionv3/release
-cp -n /path/to/delivered/epoch_10.pt ckps/full_diffusionv3/release/epoch_10.pt
 printf '%s  %s\n' \
   ea3eea848318c86cef17b9bc59a5a8c7fa17eed345123a5d359967a5323eb027 \
   ckps/full_diffusionv3/release/epoch_10.pt | sha256sum --check -
 ```
+
+For a code-only checkout or separate weight download, this
+[commit-pinned checkpoint URL](https://raw.githubusercontent.com/neasonrum/WAMPC/5a607916ac115a945e6eaaa9f6f75c7930dcd4ab/ckps/full_diffusionv3/release/epoch_10.pt)
+identifies the same file:
+
+```bash
+mkdir -p ckps/full_diffusionv3/release
+if [[ ! -e ckps/full_diffusionv3/release/epoch_10.pt ]]; then
+  curl --fail --location --retry 3 \
+    --output ckps/full_diffusionv3/release/epoch_10.pt \
+    https://raw.githubusercontent.com/neasonrum/WAMPC/5a607916ac115a945e6eaaa9f6f75c7930dcd4ab/ckps/full_diffusionv3/release/epoch_10.pt
+fi
+printf '%s  %s\n' \
+  ea3eea848318c86cef17b9bc59a5a8c7fa17eed345123a5d359967a5323eb027 \
+  ckps/full_diffusionv3/release/epoch_10.pt | sha256sum --check -
+```
+
+An existing file is not overwritten; a failed checksum must be resolved before
+loading it. The 50 MB GitHub recommendation produces a warning for this file,
+but its 88.90 MiB size is below the 100 MiB single-file limit and the upload
+succeeded. Do not add every training checkpoint to ordinary Git history.
 
 ### 4. CARLA, maps, and receiving-server paths
 
@@ -368,11 +403,12 @@ evaluator's origins.
 
 ## Maintainer Publication Checklist
 
-Publish our planner with its exact checksum and replace the pending-delivery
-description with a real release/storage URL. The frozen backbone can remain
-an upstream link. Publish the selected result/guard/runtime materials and
-current environment exports; do not upload the whole result/cache/venv tree.
-Keep third-party attribution and applicable redistribution permissions.
+The evaluated planner is already published in Git; keep its exact checksum and
+commit-pinned download link with the handoff. The frozen backbone can remain
+an upstream link. Remaining publications are the selected result/guard/runtime
+materials and current environment exports; do not upload the whole
+result/cache/venv tree. Keep third-party attribution and applicable redistribution
+permissions.
 
 Original-server environment export commands, to run when preparing the handoff:
 
@@ -388,6 +424,7 @@ git submodule status > "$HANDOFF_DIR/submodule_commits.txt"
 ```
 
 Review exports for credentials/private URLs before public release. Our evaluated
-planner is about 93 MB; the official backbone is about 484 MB. Use suitable
-release/storage artifacts (or configured Git LFS), not an indiscriminate
+planner is about 93 MB and already tracked; the official backbone is about
+484 MB and remains an upstream download. Use suitable release/storage artifacts
+(or configured Git LFS) for future checkpoint versions, not an indiscriminate
 `git add .`. Check storage/bandwidth limits before publishing large files.

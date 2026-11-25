@@ -1,0 +1,22 @@
+{
+  "version": "ego12_joint_experiment_v1",
+  "user_agreed_date_beijing": "2026-11-23",
+  "scope": "Default initialization for subsequent ego12 E2E / WM joint injection experiments unless the user changes it",
+  "planner_initialization": "original_ego12_epoch10",
+  "planner_checkpoint": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/results/full_diffusionv3_ego12_10a100_20261121_v1/epoch_10.pt",
+  "planner_checkpoint_sha256": "5e40bebfe95ea45092431071b35a4d8da94afe212c18b9279c933bd64948573b",
+  "conditioning": "tfpp_ego11_plus_state1",
+  "data_protocol": "/fs/scratch/projects/common_ai/nix3sgh_cache/WMMPC/data_protocols/pdm_dev44_fixed_v1/protocol.json",
+  "gradient_contract": {
+    "trajectory_loss": [
+      "planner",
+      "world_model"
+    ],
+    "BEV_feature_loss": [
+      "world_model"
+    ],
+    "BEV_feature_loss_to_planner": false,
+    "perception_teacher_frozen": true
+  },
+  "reference_experiment": "method/full_diffusionv8_softmax_kv/config_joint.json"
+}

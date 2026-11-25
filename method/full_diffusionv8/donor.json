@@ -1,0 +1,18 @@
+{
+  "repository": "https://github.com/123mike-source/WAMPC-V4-BCDE-Joint-20261112",
+  "commit": "e28d3fffeecfe39f52ea0972e069618dd0d33fea",
+  "reference": "method/full_diffusionv8",
+  "tensor_source_sha256": {
+    "method/full_diffusionv4/geometry.py": "ad7fe125f78dacc5e8bc843a0b1626c727edeefb4ba6e8900145ee054f34bff3",
+    "method/full_diffusionv4/future.py": "831bee4687e7e10c4ce40c00cf12d95176df37eadd7f234965e127546d5cc5c6",
+    "method/full_diffusionv6/model.py": "d5d1dd7ef124730c5de57705418950c0c88f5ac90dde337e97e61232f670ed10",
+    "method/full_diffusionv4/rolling.py": "4f8f35fb2fe5d89bd68d6660c6dbb28fec4deddfeeb21309fd86123bf7c596f8",
+    "method/full_diffusionv4/batched_rolling.py": "b170f267f5827a58f032ebb7c5bd10f39ed7304d5f99b585a28a8907595bd782",
+    "method/full_diffusionv6/rolling.py": "5714b2f753198d8c821bbef609e465f0521bf099d4f1e3d99a125e8bb42b09c1",
+    "method/full_diffusionv4/joint_data.py": "27ff632f7c92345e6a3e6c4c333b33716173b92687faca6b5c4cee42e828b89c",
+    "method/full_diffusionv7/speed.py": "55561e2e5712b30e07aa05366d623f44d3611c373a30834c6060229e16a2befa",
+    "method/irwm_bev_t_large/model.py": "dbc6fa5a6ac17cfaaf513b33cfcab00420071c613ba52c0bf59c2c456fa8a8c5",
+    "method/irwm_bev_t_large/loss.py": "6ac5a1aed6ce812752578a4ed5ee25032d21dad9c9c489413208db130b958d1e",
+    "method/irwm_bev_t/geometry.py": "1695687cb7c512076cc0081b48d44526033b9f5e7bf99bd796730350cae4816a"
+  }
+}
