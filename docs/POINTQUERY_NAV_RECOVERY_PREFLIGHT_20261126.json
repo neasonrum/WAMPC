@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "allocation": {
+    "job": "13188133",
+    "host": "rng-dl01-w080",
+    "affinity": [
+      14,
+      15,
+      28,
+      29,
+      30,
+      31,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "gpus": [
+      [
+        "0",
+        "GPU-d5652242-a468-bd54-7833-c99f757fa0b2",
+        "NVIDIA A100-SXM4-80GB",
+        "81920",
+        "0"
+      ],
+      [
+        "1",
+        "GPU-1efc671f-5747-8214-d641-fe784fce5c5b",
+        "NVIDIA A100-SXM4-80GB",
+        "81920",
+        "0"
+      ]
+    ],
+    "memory": {
+      "cgroup": "/sys/fs/cgroup/lsf/rng-dl01/job.13188133.513536.1795314510",
+      "limit_bytes": 268435456000,
+      "current_bytes": 253654974464,
+      "noncache_bytes": 3044487168,
+      "oom": 0,
+      "oom_kill": 0,
+      "unix": 1795653412.3750267
+    },
+    "cgroup": "/sys/fs/cgroup/lsf/rng-dl01/job.13188133.513536.1795314510",
+    "unix": 1795653412.4113975
+  },
+  "data_identity": "719c244c258bf4411dcd260e3314d03048450806b718977ba64a228f3f5458d2",
+  "resume_update": 2000,
+  "optimizer_tensors": 192,
+  "rng_streams": 8,
+  "global_batch": 256,
+  "physical_gpus": 6,
+  "original_sample_partition_and_cursor_preserved": true,
+  "failed_route": "Accident/Town13_Rep0_4_0_route0_11_07_23_26_00",
+  "failed_sample_rechecked": 3347,
+  "member_sha256": "80edbeece85dc808e0b007a478a56a928c7ae65643dd57bd738fb5df6afb3880",
+  "one_crc_failure_reopened_and_verified": true,
+  "persistent_corruption_fails_after_four_opens": true
+}

@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "physical_ranks": 6,
+  "logical_batches": 8,
+  "global_batch": 256,
+  "uneven_no_sync_gradient_matches_eight_batch_reference": true,
+  "rng_roundtrip": true
+}

@@ -1,3 +1,5 @@
+[Six-GPU recovery and integrity checks](docs/POINTQUERY_NAV_RECOVERY_20261126.md).
+
 # Current experiment: point-query E2E with navigation fusion
 
 Source: [method/full_diffusion_pointquery_nav](method/full_diffusion_pointquery_nav).
